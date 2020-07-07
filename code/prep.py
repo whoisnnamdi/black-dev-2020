@@ -156,4 +156,6 @@ def design_matrix(data, categorical, numeric, base):
 
     data = data.astype("float")
 
+    print(f'Design matrix complete with {data.shape[1]} variables/columns')
+
     return data
