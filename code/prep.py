@@ -2,9 +2,15 @@ import pandas as pd
 import numpy as np
 
 def prep(data: pd.DataFrame):
+    """
+    Prepare DataFrame
+
+    data: Pandas DataFrame with the survey data
+    """
     
     data = data.copy()
 
+    # Columns to keep
     keep = [
         "Hobbyist",
         "Age",
@@ -33,6 +39,7 @@ def prep(data: pd.DataFrame):
         "YearsCodePro"
     ]
 
+    # May be useful later
     groups = {
         "Demographics": ["Age", "Ethnicity", "Gender", "Sexuality", "Trans"],
         "Education": ["EdLevel", "UndergradMajor"],
@@ -43,6 +50,7 @@ def prep(data: pd.DataFrame):
         "Company": ["NEWDevOps", "OrgSize"]
     }
 
+    # Separate numeric and categorical columns
     numeric = ["Age", "Wage", "YearsCode", "YearsCodePro"]
     categorical = keep.copy()
 
@@ -50,6 +58,7 @@ def prep(data: pd.DataFrame):
         if item in numeric:
             categorical.remove(item)
 
+    # Base/omitted level for dummy variables
     base = {
         "Hobbyist": "No",
         "DatabaseWorkedWith": "MySQL",
@@ -130,6 +139,15 @@ def prep(data: pd.DataFrame):
     return data, keep, groups, categorical, numeric, base
 
 def design_matrix(data, categorical, numeric, base):
+    """
+    Create design matrix for regressions
+
+    data: Cleaned pandas DataFrame
+
+    categorical / numeric: Lists of separate variable types
+
+    base: Base/omitted level for dummy variables
+    """
 
     for cat in categorical:
         for col in list(set([i for row in data[cat].str.split(";") for i in row])):
