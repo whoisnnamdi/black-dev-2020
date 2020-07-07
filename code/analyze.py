@@ -6,7 +6,6 @@ from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 import statsmodels.api as sm
 import pandas as pd
-import numpy as np
 
 def analyze(Y: pd.Series, X: pd.DataFrame, D: str):
     """
@@ -37,7 +36,7 @@ def analyze(Y: pd.Series, X: pd.DataFrame, D: str):
     # Get variables for inference
     D_full = [col for col in X.columns if D in col]
     D_r = StrVector(D_full)
-
+    
     # Conduct inference via partialling out
     results = hdm.rlassoEffects(X_r, Y_r, index=D_r, method="partialling out")
 

@@ -58,12 +58,14 @@ def prep(data: pd.DataFrame):
         if item in numeric:
             categorical.remove(item)
 
+    data[categorical] = data[categorical].applymap(lambda x: str(x).replace("’", ""))
+
     # Base/omitted level for dummy variables
     base = {
         "Hobbyist": "No",
         "DatabaseWorkedWith": "MySQL",
         "DevType": "Developer, full-stack",
-        "EdLevel": "Bachelor’s degree (B.A., B.S., B.Eng., etc.)",
+        "EdLevel": "Bachelors degree (B.A., B.S., B.Eng., etc.)",
         "Employment": "Employed full-time",
         "Ethnicity": "White or of European descent",
         "Gender": "Man",
