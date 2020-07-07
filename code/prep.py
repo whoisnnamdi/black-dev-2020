@@ -123,11 +123,6 @@ def prep(data: pd.DataFrame):
     # Drop unneeded columns
     data = data[keep]
 
-    # This will make our lives easier later
-    #for col in data.columns:
-    #    if col in categorical:
-    #        data[col] = data[col] + ";"
-
     # Some quick checks
     print(f'{len(data)} developers left in the sample after cleaning')
     print(f'{data.Ethnicity.str.contains("Black").sum()} or {data.Ethnicity.str.contains("Black").sum() / len(data)*100:.1f}% black developers in the sample with multiracial replacement')
@@ -157,5 +152,8 @@ def design_matrix(data, categorical, numeric, base):
     data = data.astype("float")
 
     print(f'Design matrix complete with {data.shape[1]} variables/columns')
+    
+    X = data.drop(["Wage"], axis=1)
+    Y = data["Wage"]
 
-    return data
+    return X, Y
