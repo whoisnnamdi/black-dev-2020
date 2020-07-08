@@ -1,11 +1,13 @@
 import pandas as pd
 import numpy as np
 
-def prep(data: pd.DataFrame):
+def prep(data: pd.DataFrame, outcome: str):
     """
     Prepare DataFrame
 
     data: Pandas DataFrame with the survey data
+
+    outcome: String name of outcome variable
     """
     
     data = data.copy()
@@ -14,7 +16,7 @@ def prep(data: pd.DataFrame):
     keep = [
         "Hobbyist",
         "Age",
-        "Wage",
+        outcome,
         "DatabaseWorkedWith",
         "DevType",
         "EdLevel",
@@ -51,7 +53,7 @@ def prep(data: pd.DataFrame):
     }
 
     # Separate numeric and categorical columns
-    numeric = ["Age", "Wage", "YearsCode", "YearsCodePro"]
+    numeric = ["Age", outcome, "YearsCode", "YearsCodePro"]
     categorical = keep.copy()
 
     for item in keep:
@@ -109,13 +111,15 @@ def prep(data: pd.DataFrame):
 
     # We then transform the annual income values into houry earnings by dividing by 50 (which Stack Overflow assumes
     # as the number of working weeks) and then dividing by the self-reported number of work week hours
-    data["Wage"] = np.log(data["ConvertedComp"] / 50 / data["WorkWeekHrs"])
+    if outcome == "Wage":
+        data["Wage"] = np.log(data["ConvertedComp"] / 50 / data["WorkWeekHrs"])
 
     # Given income is a major focus of the analysis, we drop the small number of respondents with missing income
     #
     # We then replace any other missing values with "no_answer", which we will explicitly control for later
-    print(f'Removing {data["Wage"].isna().sum()} respondents with missing income')
-    data = data.dropna(subset=["Wage"])
+    print(f'Removing {data[outcome].isna().sum()} respondents with missing {outcome}')
+    data = data.dropna(subset=[outcome])
+    
     data = data.fillna("no_answer")
     data = data.replace("nan", "no_answer")
 
@@ -141,7 +145,7 @@ def prep(data: pd.DataFrame):
 
     return data, keep, groups, categorical, numeric, base
 
-def design_matrix(data, categorical, numeric, base):
+def design_matrix(data: pd.DataFrame, categorical: list, numeric: list, base: dict, outcome: str):
     """
     Create design matrix for regressions
 
@@ -150,6 +154,8 @@ def design_matrix(data, categorical, numeric, base):
     categorical / numeric: Lists of separate variable types
 
     base: Base/omitted level for dummy variables
+
+    outcome: String name of outcome variable
     """
 
     for cat in categorical:
@@ -164,9 +170,9 @@ def design_matrix(data, categorical, numeric, base):
         # Drop original categorical column
         data = data.drop(cat, axis=1)
 
-    # Creat cubic polynomials to model lifecycle dynamics across age and years of experience
+    # Create cubic polynomials to model lifecycle dynamics across age and years of experience
     for col in numeric:
-        if col != "Wage":
+        if col != outcome:
             data[col+"_2"] = data[col]**2
             data[col+"_3"] = data[col]**3
 
@@ -174,7 +180,7 @@ def design_matrix(data, categorical, numeric, base):
 
     print(f'Design matrix complete with {data.shape[1]} variables/columns')
     
-    X = data.drop(["Wage"], axis=1)
-    Y = data["Wage"]
+    X = data.drop([outcome], axis=1)
+    Y = data[outcome]
 
     return X, Y
