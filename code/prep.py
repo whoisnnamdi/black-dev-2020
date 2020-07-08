@@ -117,6 +117,7 @@ def prep(data: pd.DataFrame):
     print(f'Removing {data["Wage"].isna().sum()} respondents with missing income')
     data = data.dropna(subset=["Wage"])
     data = data.fillna("no_answer")
+    data = data.replace("nan", "no_answer")
 
     # Given the focus on black developers and the very small sample proportion, coding all developers who identify as at least
     # partially black as black. All other multiracial individuals coded as multiracial
@@ -152,7 +153,7 @@ def design_matrix(data, categorical, numeric, base):
     """
 
     for cat in categorical:
-        for col in list(set([i for row in data[cat].str.split(";") for i in row])):
+        for col in sorted(set([i for row in data[cat].str.split(";") for i in row])):
             
             # Create control columns
             data[cat+"_"+col] = data[cat].str.split(";").map(lambda x: col in x)
