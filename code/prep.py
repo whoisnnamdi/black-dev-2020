@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 
+def text_clean(text: str):
+    return text.strip().replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_').replace(',', '_').replace('.', '').replace('___', '_').replace('__', '_')
+
 def prep(data: pd.DataFrame, outcome: str):
     """
     Prepare DataFrame
@@ -87,6 +90,9 @@ def prep(data: pd.DataFrame, outcome: str):
         "WebframeWorkedWith": "React.js",
     }
 
+    for k in base.keys():
+        base[k] = base[k] = text_clean(base[k])
+
     # For this analysis, we are focused on:
     #   U.S. developers
     #   Professional developers
@@ -163,6 +169,7 @@ def design_matrix(data: pd.DataFrame, categorical: list, numeric: list, base: di
             
             # Create control columns
             data[cat+"_"+col] = data[cat].str.split(";").map(lambda x: col in x)
+            data = data.rename(columns={cat+"_"+col: text_clean(cat+"_"+col)})
 
         # Drop base level for each categorical
         data = data.drop(cat+"_"+base[cat], axis=1)
