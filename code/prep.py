@@ -111,13 +111,16 @@ def prep(data: pd.DataFrame, outcome: str):
         data[col].loc[data[col] == "More than 50 years"] = 51
         data[col] = data[col].astype("float")
 
-    #
+    # Collapse responses with no college education to "no_college"
     data["EdLevel"].loc[(data["EdLevel"] == "I never completed any formal education") | \
                         (data["EdLevel"] == "Primary/elementary school") | \
                         (data["EdLevel"] == "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)")] = "no_college"
 
+    # Original dataset does poor job of imputing annualized earnings for those who entered "Monthly" or "Weekly" for CompFreq, as many of these respondents in fact put in 
+    # their annual pay. This causes the ConvertedComp numbers to be badly inflated for these respondents, as it's taking annual values and multiplying them by 50 or 12.
     #
-    #
+    # Since it's highly unlikely that someone who earns more than $200,000 per year would report their earnings on a weekly or monthly basis, we replace all those
+    # responses with the value from CompTotal, which is the raw input from the survey. 
     data["ConvertedComp"].loc[(data["Country"] == "United States") & ((data["CompFreq"] == "Monthly") | (data["CompFreq"] == "Weekly")) & (data["ConvertedComp"] > 200000)] = \
         data["CompTotal"].loc[(data["Country"] == "United States") & ((data["CompFreq"] == "Monthly") | (data["CompFreq"] == "Weekly")) & (data["ConvertedComp"] > 200000)]
     
