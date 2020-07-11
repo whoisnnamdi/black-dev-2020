@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 def text_clean(text: str):
-    return text.strip().replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_').replace(',', '_').replace('.', '').replace('___', '_').replace('__', '_')
+    return text.strip().replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_').replace(',', '_').replace('’', '').replace('.', '').replace('___', '_').replace('__', '_')
 
 def prep(data: pd.DataFrame, outcome: str):
     """
@@ -70,7 +70,7 @@ def prep(data: pd.DataFrame, outcome: str):
         "Hobbyist": "No",
         "DatabaseWorkedWith": "MySQL",
         "DevType": "Developer, full-stack",
-        "EdLevel": "Bachelors degree (B.A., B.S., B.Eng., etc.)",
+        "EdLevel": "Bachelor’s degree (B.A., B.S., B.Eng., etc.)",
         "Employment": "Employed full-time",
         "Ethnicity": "White or of European descent",
         "Gender": "Man",
