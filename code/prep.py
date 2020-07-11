@@ -101,13 +101,18 @@ def prep(data: pd.DataFrame, outcome: str):
     data = data[data["MainBranch"] == "I am a developer by profession"]
     data = data[data["Age"] >= 18]
 
-    #
+    # Drop observations without years of coding experience given this is an important control
     data = data.dropna(subset=["YearsCode", "YearsCodePro"])
 
     for col in ["YearsCode", "YearsCodePro"]:
         data[col].loc[data[col] == "Less than 1 year"] = 0.5
         data[col].loc[data[col] == "More than 50 years"] = 51
         data[col] = data[col].astype("float")
+
+    #
+    data["EdLevel"].loc[(data["EdLevel"] == "I never completed any formal education") | \
+                        (data["EdLevel"] == "Primary/elementary school") | \
+                        (data["EdLevel"] == "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)")] = "no_college"
 
     # As we are dealing with self-reported income data, it is possible that some folks have lied about their income
     # with absurdly high or low values. In order to filter for this I remove some high and low values outside the 
