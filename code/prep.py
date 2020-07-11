@@ -153,6 +153,7 @@ def prep(data: pd.DataFrame, outcome: str):
     # Increases black proportion from ~1.4% (all multiracial coded as multiracial) to ~2.3% (multiracial blacks coded as black)
     data["Ethnicity"].loc[data["Ethnicity"].str.contains("Black")] = "Black or of African descent"
     data["Ethnicity"].loc[data["Ethnicity"].str.split(";").map(lambda x: len(x) > 1) | (data["Ethnicity"] == "Biracial")] = "Multiracial"
+    data["Ethnicity"].loc[~data["Ethnicity"].str.contains("Black")] = "White or of European descent"
 
     # Analogous coding for gender: anyone who picks multiple gender is coded as non-binary
     data["Gender"].loc[data["Gender"].str.split(";").map(lambda x: len(x) > 1)] = "Non-binary, genderqueer, or gender non-conforming"
