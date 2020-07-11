@@ -97,9 +97,11 @@ def prep(data: pd.DataFrame, outcome: str):
     #   U.S. developers
     #   Professional developers
     #   At least 18 years of age
+    #   Work at least 20 hours per week
     data = data[data["Country"] == "United States"]
     data = data[data["MainBranch"] == "I am a developer by profession"]
     data = data[data["Age"] >= 18]
+    data = data[data["WorkWeekHrs"] >= 20]
 
     # Drop observations without years of coding experience given this is an important control
     data = data.dropna(subset=["YearsCode", "YearsCodePro"])
@@ -114,6 +116,11 @@ def prep(data: pd.DataFrame, outcome: str):
                         (data["EdLevel"] == "Primary/elementary school") | \
                         (data["EdLevel"] == "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)")] = "no_college"
 
+    #
+    #
+    data["ConvertedComp"].loc[(data["Country"] == "United States") & ((data["CompFreq"] == "Monthly") | (data["CompFreq"] == "Weekly")) & (data["ConvertedComp"] > 200000)] = \
+        data["CompTotal"].loc[(data["Country"] == "United States") & ((data["CompFreq"] == "Monthly") | (data["CompFreq"] == "Weekly")) & (data["ConvertedComp"] > 200000)]
+    
     # As we are dealing with self-reported income data, it is possible that some folks have lied about their income
     # with absurdly high or low values. In order to filter for this I remove some high and low values outside the 
     # typical earnings range for software developers. This is admittedly a coarse approach, but likely not far from
