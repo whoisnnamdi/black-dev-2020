@@ -15,6 +15,8 @@ def prep(data: pd.DataFrame, outcome: str):
     
     data = data.copy()
 
+    data = data.rename(columns={"WebFrameWorkedWith": "WebframeWorkedWith"})
+
     # Columns to keep
     keep = [
         "Hobbyist",
@@ -28,10 +30,10 @@ def prep(data: pd.DataFrame, outcome: str):
         "Gender",
         "LanguageWorkedWith",
         "MiscTechWorkedWith",
-        "NEWCollabToolsWorkedWith",
-        "NEWDevOps",
-        "NEWLearn",
-        "NEWOvertime",
+        #"NEWCollabToolsWorkedWith",
+        #"NEWDevOps",
+        #"NEWLearn",
+        #"NEWOvertime",
         "OpSys",
         "OrgSize",
         "PlatformWorkedWith",
@@ -76,10 +78,10 @@ def prep(data: pd.DataFrame, outcome: str):
         "Gender": "Man",
         "LanguageWorkedWith": "JavaScript",
         "MiscTechWorkedWith": "Node.js",
-        "NEWCollabToolsWorkedWith": "Jira",
-        "NEWDevOps": "No",
-        "NEWLearn": "Once every few years",
-        "NEWOvertime": "Never",
+        #"NEWCollabToolsWorkedWith": "Jira",
+        #"NEWDevOps": "No",
+        #"NEWLearn": "Once every few years",
+        #"NEWOvertime": "Never",
         "OpSys": "Windows",
         "OrgSize": "2 to 9 employees",
         "PlatformWorkedWith": "Windows",
