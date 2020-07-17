@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 def text_clean(text: str):
-    return text.strip().replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_').replace(',', '_').replace('’', '').replace('.', '').replace('___', '_').replace('__', '_')
+    return text.strip().replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_').replace(',', '_').replace('’', '').replace('.', '').replace(':', '').replace('___', '_').replace('__', '_')
 
 def prep(data: pd.DataFrame, outcome: str):
     """
@@ -72,9 +72,9 @@ def prep(data: pd.DataFrame, outcome: str):
         "Hobbyist": "No",
         "DatabaseWorkedWith": "MySQL",
         "DevType": "Developer, full-stack",
-        "EdLevel": "Bachelor’s degree (B.A., B.S., B.Eng., etc.)",
+        "EdLevel": "Bachelors",
         "Employment": "Employed full-time",
-        "Ethnicity": "White or of European descent",
+        "Ethnicity": "Other",
         "Gender": "Man",
         "LanguageWorkedWith": "JavaScript",
         "MiscTechWorkedWith": "Node.js",
@@ -93,7 +93,7 @@ def prep(data: pd.DataFrame, outcome: str):
     }
 
     for k in base.keys():
-        base[k] = base[k] = text_clean(base[k])
+        base[k] = text_clean(base[k])
 
     # For this analysis, we are focused on:
     #   U.S. developers
@@ -113,10 +113,29 @@ def prep(data: pd.DataFrame, outcome: str):
         data[col].loc[data[col] == "More than 50 years"] = 51
         data[col] = data[col].astype("float")
 
-    # Collapse responses with no college education to "no_college"
+    # Collapse responses with no college education to "No_college"
     data["EdLevel"].loc[(data["EdLevel"] == "I never completed any formal education") | \
                         (data["EdLevel"] == "Primary/elementary school") | \
-                        (data["EdLevel"] == "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)")] = "no_college"
+                        (data["EdLevel"] == "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)")] = "No_college"
+
+    # Clean up of various education levels
+    for degree in ["Associate", "Bachelors", "Masters", "Other doctoral", "Professional", "Some college"]:
+        data["EdLevel"].loc[data["EdLevel"].str.contains(degree)] = degree
+
+    # Clean up of various majors
+    for degree in ["Another engineering", "social science", "natural science", "health science", "humanities", "Fine arts", "business discipline"]:
+        data["UndergradMajor"].loc[data["UndergradMajor"].str.contains(degree)] = degree
+
+    # Cleanup `OrgSize` to be consistent across datasets
+    data["OrgSize"].loc[data["OrgSize"] == "2-9 employees"] = "2 to 9 employees"
+    data["OrgSize"].loc[data["OrgSize"].str.contains("Just me")] = "1 employee"
+
+    # Clean up various tools
+    for framework in ["Angular", "ASPNET"]:
+        data["WebframeWorkedWith"].loc[data["WebframeWorkedWith"].str.contains(framework)] = framework
+
+    for platform in ["Slack"]:
+        data["PlatformWorkedWith"].loc[data["PlatformWorkedWith"].str.contains(platform)] = platform
 
     # Original dataset does poor job of imputing annualized earnings for those who entered "Monthly" or "Weekly" for CompFreq, as many of these respondents in fact put in 
     # their annual pay. This causes the ConvertedComp numbers to be badly inflated for these respondents, as it's taking annual values and multiplying them by 50 or 12.
@@ -139,12 +158,12 @@ def prep(data: pd.DataFrame, outcome: str):
 
     # Given income is a major focus of the analysis, we drop the small number of respondents with missing income
     #
-    # We then replace any other missing values with "no_answer", which we will explicitly control for later
+    # We then replace any other missing values with "No_answer", which we will explicitly control for later
     print(f'Removing {data[outcome].isna().sum()} respondents with missing {outcome}')
     data = data.dropna(subset=[outcome])
     
-    data = data.fillna("no_answer")
-    data = data.replace("nan", "no_answer")
+    data = data.fillna("No_answer")
+    data = data.replace("nan", "No_answer")
 
     # Given the focus on black developers and the very small sample proportion, coding all developers who identify as at least
     # partially black as black. All other multiracial individuals coded as multiracial
@@ -155,7 +174,7 @@ def prep(data: pd.DataFrame, outcome: str):
     # Increases black proportion from ~1.4% (all multiracial coded as multiracial) to ~2.3% (multiracial blacks coded as black)
     data["Ethnicity"].loc[data["Ethnicity"].str.contains("Black")] = "Black or of African descent"
     data["Ethnicity"].loc[data["Ethnicity"].str.split(";").map(lambda x: len(x) > 1) | (data["Ethnicity"] == "Biracial")] = "Multiracial"
-    data["Ethnicity"].loc[~data["Ethnicity"].str.contains("Black")] = "White or of European descent"
+    data["Ethnicity"].loc[~data["Ethnicity"].str.contains("Black")] = "Other"
 
     # Analogous coding for gender: anyone who picks multiple gender is coded as non-binary
     data["Gender"].loc[data["Gender"].str.split(";").map(lambda x: len(x) > 1)] = "Non-binary, genderqueer, or gender non-conforming"
@@ -186,8 +205,8 @@ def design_matrix(data: pd.DataFrame, categorical: list, numeric: list, base: di
         for col in sorted(set([i for row in data[cat].str.split(";") for i in row])):
             
             # Create control columns
-            data[cat+"_"+col] = data[cat].str.split(";").map(lambda x: col in x)
-            data = data.rename(columns={cat+"_"+col: text_clean(cat+"_"+col)})
+            data[cat+"_"+text_clean(col)] = data[cat].str.split(";").map(lambda x: col in x)
+            #data = data.rename(columns={cat+"_"+col: text_clean(cat+"_"+col)})
 
         # Drop base level for each categorical
         data = data.drop(cat+"_"+base[cat], axis=1)
