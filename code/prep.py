@@ -4,7 +4,7 @@ import numpy as np
 def text_clean(text: str):
     return text.strip().replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_').replace(',', '_').replace('’', '').replace('.', '').replace(':', '').replace('___', '_').replace('__', '_')
 
-def prep(data: pd.DataFrame, outcome: str):
+def prep(data: pd.DataFrame, outcome: str, year: int):
     """
     Prepare DataFrame
 
@@ -16,6 +16,8 @@ def prep(data: pd.DataFrame, outcome: str):
     data = data.copy()
 
     data = data.rename(columns={"WebFrameWorkedWith": "WebframeWorkedWith"})
+
+    data["Year"] = str(year)
 
     # Columns to keep
     keep = [
@@ -43,7 +45,8 @@ def prep(data: pd.DataFrame, outcome: str):
         "UndergradMajor",
         "WebframeWorkedWith",
         "YearsCode",
-        "YearsCodePro"
+        "YearsCodePro",
+        "Year"
     ]
 
     # May be useful later
@@ -90,6 +93,7 @@ def prep(data: pd.DataFrame, outcome: str):
         "Trans": "No",
         "UndergradMajor": "Computer science, computer engineering, or software engineering",
         "WebframeWorkedWith": "React.js",
+        "Year": "2019"
     }
 
     for k in base.keys():
@@ -155,6 +159,9 @@ def prep(data: pd.DataFrame, outcome: str):
     # as the number of working weeks) and then dividing by the self-reported number of work week hours
     if outcome == "Wage":
         data["Wage"] = np.log(data["ConvertedComp"] / 50 / data["WorkWeekHrs"])
+
+    # Inflate wages to February 2020 values per https://www.bls.gov/opub/ted/2020/consumer-prices-increase-2-point-3-percent-for-year-ending-february-2020.htm
+    data["Wage"] += (year == 2019) * np.log(1.023)
 
     # Given income is a major focus of the analysis, we drop the small number of respondents with missing income
     #
