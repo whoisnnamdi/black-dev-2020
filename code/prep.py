@@ -23,7 +23,6 @@ def prep(data: pd.DataFrame, outcome: str, year: int):
     keep = [
         "Hobbyist",
         "Age",
-        outcome,
         "DatabaseWorkedWith",
         "DevType",
         "EdLevel",
@@ -49,6 +48,9 @@ def prep(data: pd.DataFrame, outcome: str, year: int):
         "Year"
     ]
 
+    if outcome not in keep:
+        keep.append(outcome)
+
     # May be useful later
     groups = {
         "Demographics": ["Age", "Ethnicity", "Gender", "Sexuality", "Trans"],
@@ -61,12 +63,19 @@ def prep(data: pd.DataFrame, outcome: str, year: int):
     }
 
     # Separate numeric and categorical columns
-    numeric = ["Age", outcome, "YearsCode", "YearsCodePro"]
+    numeric = ["Age", "YearsCode", "YearsCodePro"]
+
+    if outcome == "Wage":
+        numeric.append("Wage")
+
     categorical = keep.copy()
 
     for item in keep:
         if item in numeric:
             categorical.remove(item)
+
+    if outcome in categorical:
+        categorical.remove(outcome)
 
     data[categorical] = data[categorical].applymap(lambda x: str(x).replace("’", ""))
 
@@ -95,6 +104,9 @@ def prep(data: pd.DataFrame, outcome: str, year: int):
         "WebframeWorkedWith": "React.js",
         "Year": "2019"
     }
+
+    if outcome in base.keys():
+        base.pop(outcome)
 
     for k in base.keys():
         base[k] = text_clean(base[k])
@@ -160,8 +172,8 @@ def prep(data: pd.DataFrame, outcome: str, year: int):
     if outcome == "Wage":
         data["Wage"] = np.log(data["ConvertedComp"] / 50 / data["WorkWeekHrs"])
 
-    # Inflate wages to February 2020 values per https://www.bls.gov/opub/ted/2020/consumer-prices-increase-2-point-3-percent-for-year-ending-february-2020.htm
-    data["Wage"] += (year == 2019) * np.log(1.023)
+        # Inflate wages to February 2020 values per https://www.bls.gov/opub/ted/2020/consumer-prices-increase-2-point-3-percent-for-year-ending-february-2020.htm
+        data["Wage"] += (year == 2019) * np.log(1.023)
 
     # Given income is a major focus of the analysis, we drop the small number of respondents with missing income
     #
@@ -207,6 +219,8 @@ def design_matrix(data: pd.DataFrame, categorical: list, numeric: list, base: di
 
     outcome: String name of outcome variable
     """
+
+    data = data.copy()
 
     for cat in categorical:
         for col in sorted(set([i for row in data[cat].str.split(";") for i in row])):
