@@ -61,10 +61,12 @@ def analyze(Y: pd.Series, X: pd.DataFrame, D: str, logit: bool = False):
         conf_ds = ro.conversion.rpy2py(stats.confint(results))
 
     if logit:
-        raw = sm.Logit(endog=Y, exog=X[[col for col in X.columns if D in col]].assign(const=1)).fit()
+        raw = sm.Logit(endog=Y, exog=X[[col for col in X.columns if D in col] + [col for col in X.columns if "Year_" in col]].assign(const=1)).fit()
     else:
-        raw = sm.OLS(endog=Y, exog=X[[col for col in X.columns if D in col]].assign(const=1)).fit()
+        raw = sm.OLS(endog=Y, exog=X[[col for col in X.columns if D in col] + [col for col in X.columns if "Year_" in col]].assign(const=1)).fit()
 
-    return pd.DataFrame(zip(coef_ds, se_ds, t_ds, p_ds, *conf_ds.T, raw.params, raw.bse, raw.tvalues, raw.pvalues, *raw.conf_int().values.T), 
+    year_cols = len([col for col in X.columns if "Year_" in col])
+
+    return pd.DataFrame(zip(coef_ds, se_ds, t_ds, p_ds, *conf_ds.T, raw.params[:-year_cols], raw.bse[:-year_cols], raw.tvalues[:-year_cols], raw.pvalues[:-year_cols], *raw.conf_int().values[:-year_cols].T), 
                         columns=["coef_ds", "se_ds", "t_ds", "p_ds", "lower_ds", "upper_ds", "coef_raw", "se_raw", "t_raw", "p_raw", "lower_raw", "upper_raw"], 
                         index=D_full)
