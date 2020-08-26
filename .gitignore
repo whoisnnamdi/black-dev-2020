@@ -1,3 +1,10 @@
 *.txt
 *.pdf
 *.csv
+*.DS_Store
+*.pyc
+*-checkpoint*
+*node_modules
+*.log
+*package-lock*
+*satisfaction.ipynb
