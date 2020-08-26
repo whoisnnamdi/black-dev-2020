@@ -30,3 +30,5 @@ pip install altair
 ```
 
 In addition, due to relying on both Python and R for the `rpy2` module, you will need both languages installed on your computer.
+
+You'll also need to download the 2019 and 2020 Stack Overflow Annual Developer Survey datasets from [here](https://insights.stackoverflow.com/survey) and place the CSVs in `data/2019` and `data/2020` respectively.
